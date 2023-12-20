@@ -21,11 +21,11 @@ Future<WebSocket> connect(
   socket
     ..onopen = (_) {
       completer.complete(socket);
-    } as JSFunction
+    }.toJS
     ..onerror = (dynamic event) {
       final error = event is ErrorEvent ? event.error : null;
       completer.completeError(error ?? 'unknown error');
-    } as JSFunction;
+    }.toJS;
 
   return completer.future;
 }
