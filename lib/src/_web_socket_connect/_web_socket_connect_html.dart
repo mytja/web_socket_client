@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:html';
+import 'dart:js_interop';
+import 'package:web/web.dart';
 
 /// Create a WebSocket connection.
 Future<WebSocket> connect(
@@ -8,24 +9,23 @@ Future<WebSocket> connect(
   Duration? pingInterval,
   String? binaryType,
 }) async {
-  final socket = WebSocket(url, protocols)..binaryType = binaryType;
+  final socket = WebSocket(
+    url,
+    (protocols?.toList() ?? const <String>[]).map((e) => e.toJS).toList().toJS,
+  )..binaryType = binaryType ?? 'list';
 
   if (socket.readyState == 1) return socket;
 
   final completer = Completer<WebSocket>();
 
-  unawaited(
-    socket.onOpen.first.then((_) {
+  socket
+    ..onopen = (_) {
       completer.complete(socket);
-    }),
-  );
-
-  unawaited(
-    socket.onError.first.then((event) {
+    } as JSFunction
+    ..onerror = (dynamic event) {
       final error = event is ErrorEvent ? event.error : null;
       completer.completeError(error ?? 'unknown error');
-    }),
-  );
+    } as JSFunction;
 
   return completer.future;
 }
